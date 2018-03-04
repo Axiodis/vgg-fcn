@@ -1,6 +1,6 @@
-from vgg16_fcn import VGG16_FCN
+from trainer.vgg16_fcn import VGG16_FCN
+from trainer.data_reader import DataReader
 from datetime import datetime
-from data_reader import DataReader
 import tensorflow as tf
 import os
 import numpy as np
