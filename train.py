@@ -6,7 +6,8 @@ import os
 import numpy as np
 import logging
 
-FLAGS = tf.app.flags.FLAGS
+flags = tf.app.flags
+FLAGS = flags.FLAGS
 flags.DEFINE_string('main_dir', 'main', 'Main Directory.')
 
 log_file = "{}.log".format(datetime.now().strftime("%d-%m-%Y"))
