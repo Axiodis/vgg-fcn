@@ -18,11 +18,11 @@ NUM_CLASSES = 20
 learning_rate = 1e-6
 batch_size = 2
 
-images_dir = os.path.join(FLAGS.main_dir,"/VOC2012/JPEGImages")
-labels_dir = os.path.join(FLAGS.main_dir,"/VOC2012/SegmentationClass")
+images_dir = os.path.join(FLAGS.main_dir,"VOC2012/JPEGImages")
+labels_dir = os.path.join(FLAGS.main_dir,"VOC2012/SegmentationClass")
 
-filewriter_path = os.path.join(FLAGS.main_dir,"/vgg_fcn/tensorboard")
-checkpoint_path = os.path.join(FLAGS.main_dir,"/vgg_fcn/checkpoints")
+filewriter_path = os.path.join(FLAGS.main_dir,"vgg_fcn/tensorboard")
+checkpoint_path = os.path.join(FLAGS.main_dir,"vgg_fcn/checkpoints")
 
 tf.reset_default_graph()
 
