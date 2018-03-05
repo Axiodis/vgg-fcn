@@ -1,8 +1,8 @@
 import numpy as np
 import tensorflow as tf
-import inspect
-import os
 from math import ceil
+from StringIO import StringIO
+from tensorflow.python.lib.io import file_io
 
 VGG_MEAN = [103.939, 116.779, 123.68]# Mean value of pixels in R G and B channels
 
@@ -20,6 +20,7 @@ class VGG16_FCN:
         
     def build(self):
         
+        """
         # Convert RGB to BGR and substract pixels mean
         red, green, blue = tf.split(axis=3, num_or_size_splits=3, value=self.X)
 
@@ -28,7 +29,9 @@ class VGG16_FCN:
             green - VGG_MEAN[1],
             red - VGG_MEAN[2],
         ])
-    
+        """
+        
+        x = self.X
         #------------Build VGG16-FCN normal layers--------------------------
         
         #Layer 1
@@ -195,15 +198,13 @@ class VGG16_FCN:
     def dropout(self, x, keep_prob):
         return tf.nn.dropout(x, keep_prob)
 
-    def load_initial_weights(self, session, vgg16_npy_path=None):
+    def load_initial_weights(self, session, vgg16_npy_path):
         
-        if vgg16_npy_path is None:
-             path = inspect.getfile(VGG16_FCN)
-             path = os.path.abspath(os.path.join(path, os.pardir))
-             path = os.path.join(path, "vgg16.npy")
-             vgg16_npy_path = path
-
-        weights_dict = np.load(vgg16_npy_path, encoding='latin1').item()
+        if(vgg16_npy_path.startswith("gs://")):
+            file = file_io.read_file_to_string(vgg16_npy_path)
+            weights_dict = np.load(StringIO(file), encoding='latin1').item()
+        else:
+            weights_dict = np.load(vgg16_npy_path, encoding='latin1').item()
         
         for op_name in weights_dict:
             
