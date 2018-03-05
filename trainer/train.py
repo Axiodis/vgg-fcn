@@ -1,15 +1,10 @@
-"""
 from trainer.vgg16_fcn import VGG16_FCN
-from trainer.data_reader import DataReader
 from trainer.datagenerator import ImageDataGenerator
-"""
-from datagenerator import ImageDataGenerator
-from vgg16_fcn import VGG16_FCN
+
+import tensorflow as tf
 from tensorflow.contrib.data import Iterator
 from datetime import datetime
-import tensorflow as tf
 import os
-import numpy as np
 import logging
 
 flags = tf.app.flags
@@ -29,8 +24,8 @@ checkpoint_path = os.path.join(FLAGS.main_dir,"vgg_fcn/checkpoints")
 
 train_file = 'train.txt'
 
-config = tf.ConfigProto()
-config.gpu_options.per_process_gpu_memory_fraction = 0.955
+#config = tf.ConfigProto()
+#config.gpu_options.per_process_gpu_memory_fraction = 0.955
 
 """ Initialize datagenerator """
 with tf.device('/cpu:0'):
@@ -80,7 +75,7 @@ print("[TRAIN] => Time: {} Start session".format(datetime.now()))
 logging.info("Session started")
 
 try:
-    with tf.Session(config=config) as sess:
+    with tf.Session() as sess:
      
         # Initialize all variables
         sess.run(tf.global_variables_initializer())
