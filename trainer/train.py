@@ -6,6 +6,7 @@ from tensorflow.contrib.data import Iterator
 from datetime import datetime
 import os
 import logging
+import subprocess
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -22,7 +23,13 @@ batch_size = 1
 filewriter_path = os.path.join(FLAGS.main_dir,"vgg_fcn/tensorboard")
 checkpoint_path = os.path.join(FLAGS.main_dir,"vgg_fcn/checkpoints")
 
+
+
 train_file = 'train.txt'
+
+subprocess.check_call(['gsutil', '-m' , 'cp', '-r', os.path.join(FLAGS.main_dir, "vgg_fcn", train_file), '/tmp'])
+
+train_file = os.path.join('/tmp',train_file)
 
 #config = tf.ConfigProto()
 #config.gpu_options.per_process_gpu_memory_fraction = 0.955
