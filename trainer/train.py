@@ -81,63 +81,65 @@ saver = tf.train.Saver()
 print("[TRAIN] => Time: {} Start session".format(datetime.now()))
 logging.info("Session started")
 
-try:
-    with tf.Session() as sess:
-     
-        # Initialize all variables
-        sess.run(tf.global_variables_initializer())
-      
-        # Add the model graph to TensorBoard
-        writer.add_graph(sess.graph)
-        
-        ckpt = tf.train.get_checkpoint_state(checkpoint_path)
-        if ckpt and ckpt.model_checkpoint_path:
-            saver.restore(sess, ckpt.model_checkpoint_path)
-            print("Model restored...")
-        else:
-            # Load the pretrained weights into the non-trainable layer
-            model.load_initial_weights(sess,os.path.join(FLAGS.main_dir,"vgg_fcn/vgg16.npy"))
-            print("Initial weights loaded...")
-      
-        print("[TRAIN] => Time: {} Start training...".format(datetime.now()))
-        print("[TENSORBOARD] => Open Tensorboard at --logdir {}".format(filewriter_path))
-        logging.info("Training started")
+#try:
+with tf.Session() as sess:
+ 
+    # Initialize all variables
+    sess.run(tf.global_variables_initializer())
+  
+    # Add the model graph to TensorBoard
+    writer.add_graph(sess.graph)
     
-        for epoch in range(num_epochs):
-            
-            # Initialize iterator with the training dataset
-            sess.run(training_init_op)
-        
-            print("[EPOCH] => Time: {} Epoch number: {}".format(datetime.now(), epoch+1))
-            logging.info("Epoch: {}".format(epoch+1))
-            
-            for step in range(tr_data.data_size):
-                
-                batch_xs, batch_ys = sess.run(next_batch)
-                
-                sess.run(train_op, feed_dict={x: batch_xs, 
-                                              y: batch_ys, 
-                                              keep_prob: 0.5})
-            
-            if(epoch % 25 == 0 and epoch > 0):
-            
-                print("[SAVE] => Time: {} Saving checkpoint of model...".format(datetime.now()))  
-                
-                checkpoint_name = os.path.join(checkpoint_path, 'model_epoch'+str(datetime.now())+'.ckpt')
-                save_path = saver.save(sess, checkpoint_name)  
-                
-                print("[SAVE] => Time: {} Model checkpoint saved at {}".format(datetime.now(), checkpoint_name))
-                
-        print("[TRAIN] => Time: {} Finish training...".format(datetime.now()))
-        logging.info("Training finished")
-    
-        checkpoint_name = os.path.join(checkpoint_path, 'final_model'+str(datetime.now())+'.ckpt')
-        print("[FINAL-SAVE] => Time: {} Final model checkpoint saved at {}".format(datetime.now(), checkpoint_name))
+    ckpt = tf.train.get_checkpoint_state(checkpoint_path)
+    if ckpt and ckpt.model_checkpoint_path:
+        saver.restore(sess, ckpt.model_checkpoint_path)
+        print("Model restored...")
+    else:
+        # Load the pretrained weights into the non-trainable layer
+        model.load_initial_weights(sess,os.path.join(FLAGS.main_dir,"vgg_fcn/vgg16.npy"))
+        print("Initial weights loaded...")
+  
+    print("[TRAIN] => Time: {} Start training...".format(datetime.now()))
+    print("[TENSORBOARD] => Open Tensorboard at --logdir {}".format(filewriter_path))
+    logging.info("Training started")
 
+    for epoch in range(num_epochs):
+        
+        # Initialize iterator with the training dataset
+        sess.run(training_init_op)
+    
+        print("[EPOCH] => Time: {} Epoch number: {}".format(datetime.now(), epoch+1))
+        logging.info("Epoch: {}".format(epoch+1))
+        
+        for step in range(tr_data.data_size):
+            
+            batch_xs, batch_ys = sess.run(next_batch)
+            
+            sess.run(train_op, feed_dict={x: batch_xs, 
+                                          y: batch_ys, 
+                                          keep_prob: 0.5})
+        
+        if(epoch % 25 == 0 and epoch > 0):
+        
+            print("[SAVE] => Time: {} Saving checkpoint of model...".format(datetime.now()))  
+            
+            checkpoint_name = os.path.join(checkpoint_path, 'model_epoch'+str(datetime.now())+'.ckpt')
+            save_path = saver.save(sess, checkpoint_name)  
+            
+            print("[SAVE] => Time: {} Model checkpoint saved at {}".format(datetime.now(), checkpoint_name))
+            
+    print("[TRAIN] => Time: {} Finish training...".format(datetime.now()))
+    logging.info("Training finished")
+
+    checkpoint_name = os.path.join(checkpoint_path, 'final_model'+str(datetime.now())+'.ckpt')
+    print("[FINAL-SAVE] => Time: {} Final model checkpoint saved at {}".format(datetime.now(), checkpoint_name))
+
+"""
 except Exception as e:
     print("[ERROR] => Time: {} Unexpected error encountered. Please check the log file.".format(datetime.now()))
     logging.error("Error message: {}".format(e))
     logging.info("Terminating...".format(e))
+"""
     
     
     
