@@ -96,7 +96,7 @@ try:
             print("Model restored...")
         else:
             # Load the pretrained weights into the non-trainable layer
-            model.load_initial_weights(sess,"vgg16.npy")
+            model.load_initial_weights(sess,os.path.join(FLAGS.main_dir,"vgg_fcn/vgg16.npy"))
             print("Initial weights loaded...")
       
         print("[TRAIN] => Time: {} Start training...".format(datetime.now()))
