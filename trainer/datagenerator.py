@@ -67,7 +67,7 @@ class ImageDataGenerator(object):
         self.labels = []
         for i in permutation:
             self.images.append(images[i])
-            self.labels.append(labels[i].strip("\n"))
+            self.labels.append(labels[i])
 
     def _parse_function_train(self, image, label):
         
@@ -97,7 +97,7 @@ class ImageDataGenerator(object):
         
         label_truncated = label_decoded[:, :, 0]
 
-        return img_bgr, label_truncated
+        return img_bgr, label_truncated.strip()
 
     def _parse_function_inference(self, image, label):
         # load and preprocess the image

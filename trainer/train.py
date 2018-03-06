@@ -38,7 +38,6 @@ train_file = os.path.join('/tmp',train_file)
 #config.gpu_options.per_process_gpu_memory_fraction = 0.955
 
 """ Initialize datagenerator """
-"""
 with tf.device('/cpu:0'):
     tr_data = ImageDataGenerator(train_file,
                                  mode='training',
@@ -49,7 +48,6 @@ with tf.device('/cpu:0'):
     next_batch = iterator.get_next()
 
 training_init_op = iterator.make_initializer(tr_data.data)
-"""
 
 # TF placeholder for graph input and output
 x = tf.placeholder(tf.float32, shape=[batch_size, None, None, 3], name="input_image")
@@ -111,7 +109,7 @@ with tf.Session() as sess:
     for epoch in range(num_epochs):
         
         # Initialize iterator with the training dataset
-        #sess.run(training_init_op)
+        sess.run(training_init_op)
     
         print("[EPOCH] => Time: {} Epoch number: {}".format(datetime.now(), epoch+1))
         logging.info("Epoch: {}".format(epoch+1))
@@ -119,37 +117,12 @@ with tf.Session() as sess:
         with open(train_file, 'r') as f:
             lines = f.readlines()
             
-        for line in lines:
-        #for step in range(tr_data.data_size):
+        for step in range(tr_data.data_size):
             
-            #batch_xs, batch_ys = sess.run(next_batch)
+            batch_xs, batch_ys = sess.run(next_batch)
             
-            items = line.split(' ')
-            
-            image = convert_to_tensor(items[0], dtype=dtypes.string)
-            img_string = tf.read_file(image)
-            img_decoded = tf.image.decode_jpeg(img_string, channels=3)
-        
-            label = convert_to_tensor(items[1], dtype=dtypes.string)
-            label_string = tf.read_file(label)
-            label_decoded = tf.image.decode_png(label_string, channels=0)
-            
-            if random.random() < 0.5:
-                img_decoded = tf.image.flip_left_right(img_decoded)
-                label_decoded = tf.image.flip_left_right(label_decoded)
-            
-            img_centered = tf.subtract(tf.to_float(img_decoded), IMAGENET_MEAN)
-    
-            # RGB -> BGR
-            img_bgr = img_centered[:, :, ::-1]
-            
-            label_truncated = label_decoded[:, :, 0]
-            
-            image = sess.run(img_bgr)
-            label = sess.run(label_truncated)
-            
-            sess.run(train_op, feed_dict={x: image, 
-                                          y: label, 
+            sess.run(train_op, feed_dict={x: batch_xs, 
+                                          y: batch_ys, 
                                           keep_prob: 0.5})
         
         if(epoch % 20 == 0 and epoch > 0):
