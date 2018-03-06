@@ -82,7 +82,7 @@ print("[TRAIN] => Time: {} Start session".format(datetime.now()))
 logging.info("Session started")
 
 #try:
-with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
+with tf.Session() as sess:
  
     # Initialize all variables
     sess.run(tf.global_variables_initializer())
