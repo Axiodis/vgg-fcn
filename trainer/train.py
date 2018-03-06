@@ -7,9 +7,6 @@ from datetime import datetime
 import os
 import logging
 import subprocess
-from tensorflow.python.framework import dtypes
-from tensorflow.python.framework.ops import convert_to_tensor
-import random
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -85,7 +82,7 @@ print("[TRAIN] => Time: {} Start session".format(datetime.now()))
 logging.info("Session started")
 
 #try:
-with tf.Session() as sess:
+with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
  
     # Initialize all variables
     sess.run(tf.global_variables_initializer())
@@ -112,6 +109,7 @@ with tf.Session() as sess:
         sess.run(training_init_op)
     
         print("[EPOCH] => Time: {} Epoch number: {}".format(datetime.now(), epoch+1))
+        logging.info("Steps per epoch: {}".format(tr_data.data_size))
         logging.info("Epoch: {}".format(epoch+1))
         
         with open(train_file, 'r') as f:
@@ -119,13 +117,16 @@ with tf.Session() as sess:
             
         for step in range(tr_data.data_size):
             
+            if(step % 100 == 0):
+                logging.info("Step {} of {}".format(step, tr_data.data_size))
+            
             batch_xs, batch_ys = sess.run(next_batch)
             
             sess.run(train_op, feed_dict={x: batch_xs, 
                                           y: batch_ys, 
                                           keep_prob: 0.5})
         
-        if(epoch % 20 == 0 and epoch > 0):
+        if(epoch % 10 == 0 and epoch > 0):
         
             print("[SAVE] => Time: {} Saving checkpoint of model...".format(datetime.now()))  
             
