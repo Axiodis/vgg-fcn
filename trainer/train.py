@@ -145,8 +145,11 @@ with tf.Session() as sess:
             
             label_truncated = label_decoded[:, :, 0]
             
-            sess.run(train_op, feed_dict={x: img_bgr, 
-                                          y: label_truncated, 
+            image = sess.run(img_bgr)
+            label = sess.run(label_truncated)
+            
+            sess.run(train_op, feed_dict={x: image, 
+                                          y: label, 
                                           keep_prob: 0.5})
         
         if(epoch % 20 == 0 and epoch > 0):
