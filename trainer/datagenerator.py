@@ -73,11 +73,11 @@ class ImageDataGenerator(object):
         
 
         # load and preprocess the image
-        img_string = tf.read_file(image)
+        img_string = tf.read_file(image.strip("\r\n"))
         img_decoded = tf.image.decode_jpeg(img_string, channels=3)
         
         # load and preprocess the label
-        label_string = tf.read_file(label)
+        label_string = tf.read_file(label.strip("\r\n"))
         label_decoded = tf.image.decode_png(label_string, channels=0)
         
         """
@@ -97,7 +97,7 @@ class ImageDataGenerator(object):
         
         label_truncated = label_decoded[:, :, 0]
 
-        return img_bgr, label_truncated.strip()
+        return img_bgr, label_truncated
 
     def _parse_function_inference(self, image, label):
         # load and preprocess the image
