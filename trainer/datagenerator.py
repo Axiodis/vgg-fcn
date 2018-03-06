@@ -56,8 +56,8 @@ class ImageDataGenerator(object):
             lines = f.readlines()
             for line in lines:
                 items = line.split(' ')
-                self.images.append(items[0])
-                self.labels.append(items[1])
+                self.images.append(items[0].strip("\r\n"))
+                self.labels.append(items[1].strip("\r\n"))
 
     def _shuffle_lists(self):
         images = self.images
@@ -73,11 +73,11 @@ class ImageDataGenerator(object):
         
 
         # load and preprocess the image
-        img_string = tf.read_file(image.strip("\r\n"))
+        img_string = tf.read_file(image)
         img_decoded = tf.image.decode_jpeg(img_string, channels=3)
         
         # load and preprocess the label
-        label_string = tf.read_file(label.strip("\r\n"))
+        label_string = tf.read_file(label)
         label_decoded = tf.image.decode_png(label_string, channels=0)
         
         """
