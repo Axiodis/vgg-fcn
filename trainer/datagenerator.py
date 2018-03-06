@@ -67,7 +67,7 @@ class ImageDataGenerator(object):
         self.labels = []
         for i in permutation:
             self.images.append(images[i])
-            self.labels.append(labels[i])
+            self.labels.append(labels[i].strip("\n"))
 
     def _parse_function_train(self, image, label):
         
