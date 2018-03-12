@@ -17,7 +17,7 @@ log_file = "{}.log".format(datetime.now().strftime("%d-%m-%Y"))
 logging.basicConfig(filename = log_file, format='%(levelname)s (%(asctime)s): %(message)s', level = logging.INFO)
 
 num_epochs = 100
-NUM_CLASSES = 20
+NUM_CLASSES = 21
 learning_rate = 1e-6
 batch_size = 1
 
