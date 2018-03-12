@@ -111,7 +111,7 @@ with tf.Session() as sess:
             batch_xs, batch_ys = sess.run(next_batch)
             
             if((step + 1) % 500 == 0):
-                t_loss = sess.run(loss, feed_dict={x: batch_xs, y: batch_ys})
+                t_loss = sess.run(loss, feed_dict={x: batch_xs, y: batch_ys, keep_prob: 0.5})
                 logging.info("Step {} of {} | Loss: {}".format(step, tr_data.data_size,t_loss))
             
             
