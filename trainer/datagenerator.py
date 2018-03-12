@@ -89,9 +89,8 @@ class ImageDataGenerator(object):
         # RGB -> BGR
         img_bgr = img_centered[:, :, ::-1]
         
-        label = tf.expand_dims(label_decoded, axis=3)
 
-        return img_bgr, label
+        return img_bgr, label_decoded
 
     def _parse_function_inference(self, image, label):
         # load and preprocess the image
