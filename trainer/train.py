@@ -15,9 +15,9 @@ flags.DEFINE_string('main_dir', 'main', 'Main Directory.')
 log_file = "{}.log".format(datetime.now().strftime("%d-%m-%Y"))
 logging.basicConfig(filename = log_file, format='%(levelname)s (%(asctime)s): %(message)s', level = logging.INFO)
 
-num_epochs = 1000
+num_epochs = 100
 NUM_CLASSES = 20
-learning_rate = 1e-6
+learning_rate = 1e-5
 batch_size = 1
 
 filewriter_path = os.path.join(FLAGS.main_dir,"vgg_fcn/tensorboard")
@@ -90,14 +90,7 @@ with tf.Session() as sess:
     # Add the model graph to TensorBoard
     writer.add_graph(sess.graph)
     
-    ckpt = tf.train.get_checkpoint_state(checkpoint_path)
-    if ckpt and ckpt.model_checkpoint_path:
-        saver.restore(sess, ckpt.model_checkpoint_path)
-        print("Model restored...")
-    else:
-        # Load the pretrained weights into the non-trainable layer
-        model.load_initial_weights(sess,os.path.join(FLAGS.main_dir,"vgg_fcn/vgg16.npy"))
-        print("Initial weights loaded...")
+    model.load_initial_weights(sess,os.path.join(FLAGS.main_dir,"vgg_fcn/vgg16.npy"))
   
     print("[TRAIN] => Time: {} Start training...".format(datetime.now()))
     print("[TENSORBOARD] => Open Tensorboard at --logdir {}".format(filewriter_path))
@@ -112,21 +105,21 @@ with tf.Session() as sess:
         logging.info("Steps per epoch: {}".format(tr_data.data_size))
         logging.info("Epoch: {}".format(epoch+1))
         
-        with open(train_file, 'r') as f:
-            lines = f.readlines()
             
         for step in range(tr_data.data_size):
             
-            if(step % 100 == 0):
-                logging.info("Step {} of {}".format(step, tr_data.data_size))
-            
             batch_xs, batch_ys = sess.run(next_batch)
+            
+            if((step + 1) % 500 == 0):
+                t_loss = sess.run(loss, feed_dict={x: batch_xs, y: batch_ys})
+                logging.info("Step {} of {} | Loss: {}".format(step, tr_data.data_size,t_loss))
+            
             
             sess.run(train_op, feed_dict={x: batch_xs, 
                                           y: batch_ys, 
                                           keep_prob: 0.5})
         
-        if(epoch % 10 == 0 and epoch > 0):
+        if((epoch+1) % 25 == 0):
         
             print("[SAVE] => Time: {} Saving checkpoint of model...".format(datetime.now()))  
             
@@ -134,6 +127,7 @@ with tf.Session() as sess:
             save_path = saver.save(sess, checkpoint_name)  
             
             print("[SAVE] => Time: {} Model checkpoint saved at {}".format(datetime.now(), checkpoint_name))
+            logging.info("Saving Model")
             
     print("[TRAIN] => Time: {} Finish training...".format(datetime.now()))
     logging.info("Training finished")

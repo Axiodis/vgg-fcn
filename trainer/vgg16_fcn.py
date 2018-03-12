@@ -20,17 +20,6 @@ class VGG16_FCN:
         
     def build(self):
         
-        """
-        # Convert RGB to BGR and substract pixels mean
-        red, green, blue = tf.split(axis=3, num_or_size_splits=3, value=self.X)
-
-        x = tf.concat(axis=3, values=[
-            blue - VGG_MEAN[0],
-            green - VGG_MEAN[1],
-            red - VGG_MEAN[2],
-        ])
-        """
-        
         x = self.X
         #------------Build VGG16-FCN normal layers--------------------------
         

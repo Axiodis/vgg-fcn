@@ -11,8 +11,7 @@ IMAGENET_MEAN = tf.constant([123.68, 116.779, 103.939], dtype=tf.float32)
 
 class ImageDataGenerator(object):
 
-    def __init__(self, txt_file, mode, batch_size = 1, shuffle=True,
-                 buffer_size=1000):
+    def __init__(self, txt_file, mode, batch_size = 1, shuffle=True):
         
         self._read_txt_file(txt_file)
 
@@ -39,10 +38,6 @@ class ImageDataGenerator(object):
 
         else:
             raise ValueError("Invalid mode '%s'." % (mode))
-
-        # shuffle the first `buffer_size` elements of the dataset
-        if shuffle:
-            data = data.shuffle(buffer_size=buffer_size)
 
         # create a new dataset with batches of images
         data = data.batch(batch_size)
