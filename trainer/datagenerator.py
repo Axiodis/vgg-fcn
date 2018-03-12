@@ -84,15 +84,14 @@ class ImageDataGenerator(object):
             label_decoded = tf.image.flip_left_right(label_decoded)
             
             
-        
         img_centered = tf.subtract(tf.to_float(img_decoded), IMAGENET_MEAN)
 
         # RGB -> BGR
         img_bgr = img_centered[:, :, ::-1]
         
-        label_truncated = label_decoded[:, :, 0]
+        label = tf.expand_dims(label_decoded, axis=3)
 
-        return img_bgr, label_truncated
+        return img_bgr, label
 
     def _parse_function_inference(self, image, label):
         # load and preprocess the image

@@ -7,6 +7,7 @@ from datetime import datetime
 import os
 import logging
 import subprocess
+import numpy as np
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -17,7 +18,7 @@ logging.basicConfig(filename = log_file, format='%(levelname)s (%(asctime)s): %(
 
 num_epochs = 100
 NUM_CLASSES = 20
-learning_rate = 1e-5
+learning_rate = 1e-6
 batch_size = 1
 
 filewriter_path = os.path.join(FLAGS.main_dir,"vgg_fcn/tensorboard")
@@ -48,7 +49,7 @@ training_init_op = iterator.make_initializer(tr_data.data)
 
 # TF placeholder for graph input and output
 x = tf.placeholder(tf.float32, shape=[batch_size, None, None, 3], name="input_image")
-y = tf.placeholder(tf.int32, shape=[batch_size, None, None], name="input_label")
+y = tf.placeholder(tf.int32, shape=[batch_size, None, None, 1], name="input_label")
 keep_prob = tf.placeholder(tf.float32)
 
 """Build Model"""
@@ -58,7 +59,7 @@ logging.info("Model build")
 
 
 """Define loss function"""
-loss = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(labels = y, logits = model.upscore8, name="loss")))
+loss = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(labels = tf.squeeze(y, squeeze_dims=[3]), logits = model.upscore8, name="loss")))
 
 
 """Define training op"""
@@ -110,14 +111,17 @@ with tf.Session() as sess:
             
             batch_xs, batch_ys = sess.run(next_batch)
             
+            assert not np.any(np.isnan(batch_xs))
+            assert not np.any(np.isnan(batch_ys))
+            
             if((step + 1) % 500 == 0):
-                t_loss = sess.run(loss, feed_dict={x: batch_xs, y: batch_ys, keep_prob: 0.5})
+                t_loss = sess.run(loss, feed_dict={x: batch_xs, y: batch_ys, keep_prob: 0.8})
                 logging.info("Step {} of {} | Loss: {}".format(step, tr_data.data_size,t_loss))
             
             
             sess.run(train_op, feed_dict={x: batch_xs, 
                                           y: batch_ys, 
-                                          keep_prob: 0.5})
+                                          keep_prob: 0.8})
         
         if((epoch+1) % 25 == 0):
         
