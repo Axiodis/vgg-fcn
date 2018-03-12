@@ -17,7 +17,7 @@ log_file = "{}.log".format(datetime.now().strftime("%d-%m-%Y"))
 logging.basicConfig(filename = log_file, format='%(levelname)s (%(asctime)s): %(message)s', level = logging.INFO)
 
 num_epochs = 100
-NUM_CLASSES = 21
+NUM_CLASSES = 20
 learning_rate = 1e-6
 batch_size = 1
 
@@ -59,7 +59,7 @@ logging.info("Model build")
 
 
 """Define loss function"""
-loss = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(labels = tf.squeeze(y, squeeze_dims=[3]), 
+loss = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(labels = y, 
                                                                       logits = model.upscore8, name="loss")))
 
 
@@ -115,9 +115,9 @@ with tf.Session() as sess:
             assert not np.any(np.isnan(batch_xs))
             assert not np.any(np.isnan(batch_ys))
             
-            if((step + 1) % 500 == 0):
-                t_loss = sess.run(loss, feed_dict={x: batch_xs, y: batch_ys, keep_prob: 0.8})
-                logging.info("Step {} of {} | Loss: {}".format(step, tr_data.data_size,t_loss))
+            #if((step + 1) % 500 == 0):
+            t_loss = sess.run(loss, feed_dict={x: batch_xs, y: batch_ys, keep_prob: 0.8})
+            logging.info("Step {} of {} | Loss: {}".format(step, tr_data.data_size,t_loss))
             
             
             sess.run(train_op, feed_dict={x: batch_xs, 
