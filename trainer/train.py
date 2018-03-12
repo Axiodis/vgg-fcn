@@ -58,7 +58,7 @@ logging.info("Model build")
 
 
 """Define loss function"""
-loss = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(labels = y, logits = model.upscore8, name="Loss")))
+loss = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(labels = y, logits = model.upscore8, name="loss")))
 
 
 """Define training op"""
