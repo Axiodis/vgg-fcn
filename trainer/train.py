@@ -18,7 +18,7 @@ logging.basicConfig(filename = log_file, format='%(levelname)s (%(asctime)s): %(
 
 num_epochs = 100
 NUM_CLASSES = 20
-learning_rate = 1e-6
+learning_rate = 1e-4
 batch_size = 1
 
 filewriter_path = os.path.join(FLAGS.main_dir,"vgg_fcn/tensorboard")
@@ -59,7 +59,7 @@ logging.info("Model build")
 
 
 """Define loss function"""
-loss = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(labels = y, 
+loss = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(labels = tf.squeeze(y, squeeze_dims=[3]), 
                                                                       logits = model.upscore8, name="loss")))
 
 
@@ -112,11 +112,8 @@ with tf.Session() as sess:
             
             batch_xs, batch_ys = sess.run(next_batch)
             
-            assert not np.any(np.isnan(batch_xs))
-            assert not np.any(np.isnan(batch_ys))
-            
             #if((step + 1) % 500 == 0):
-            t_loss = sess.run(loss, feed_dict={x: batch_xs, y: batch_ys, keep_prob: 0.8})
+            t_loss = sess.run(loss, feed_dict={x: np.array(batch_xs), y: np.array(batch_ys), keep_prob: 0.8})
             logging.info("Step {} of {} | Loss: {}".format(step, tr_data.data_size,t_loss))
             
             
