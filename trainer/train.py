@@ -1,5 +1,6 @@
 from trainer.vgg16_fcn import VGG16_FCN
 from trainer.datagenerator import ImageDataGenerator
+from trainer.processlabel import process_label
 
 import tensorflow as tf
 from tensorflow.contrib.data import Iterator
@@ -59,25 +60,50 @@ logging.info("Model build")
 
 
 """Define loss function"""
-loss = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(labels = tf.squeeze(y, squeeze_dims=[3]), 
+with tf.name_scope("cross_ent"):
+    loss = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(labels = tf.squeeze(y, squeeze_dims=[3]), 
                                                                       logits = model.upscore8, name="loss")))
 
 
 """Define training op"""
-trainable_var = tf.trainable_variables() # Collect all trainable variables for the net
 
-optimizer = tf.train.AdamOptimizer(learning_rate)
+# Train op
+with tf.name_scope("train"):
+    
+    trainable_var = tf.trainable_variables() # Collect all trainable variables for the net
+    
+    # Get gradients of all trainable variables
+    gradients = tf.gradients(loss, trainable_var)
+    gradients = list(zip(gradients, trainable_var))
 
-grads = optimizer.compute_gradients(loss, var_list=trainable_var)
+    # Create optimizer and apply gradient descent to the trainable variables
+    optimizer = tf.train.AdamOptimizer(learning_rate)
+    train_op = optimizer.apply_gradients(grads_and_vars=gradients)
 
-train_op = optimizer.apply_gradients(grads)
-
+    #grads = optimizer.compute_gradients(loss, var_list=trainable_var)
+    #train_op = optimizer.apply_gradients(grads)
+    
+   
 # Initialize the FileWriter
 writer = tf.summary.FileWriter(filewriter_path)
 
 # Initialize saver for store model checkpoints
 saver = tf.train.Saver()
+    
+""" Summaries """
+# Add gradients to summary
+for gradient, var in gradients:
+    tf.summary.histogram(var.name + '/gradient', gradient)
 
+# Add the variables we train to the summary
+for var in trainable_var:
+    tf.summary.histogram(var.name, var)
+
+# Add the loss to summary
+tf.summary.scalar('cross_entropy', loss)
+
+# Merge all summaries together
+merged_summary = tf.summary.merge_all()
 
 """Start Tensorflow session"""
 print("[TRAIN] => Time: {} Start session".format(datetime.now()))
@@ -112,9 +138,21 @@ with tf.Session() as sess:
             
             batch_xs, batch_ys = sess.run(next_batch)
             
+            """ Map label colors"""
+            for i in range(batch_ys.shape[0]):
+                batch_ys[i] = process_label(batch_ys[i])
+            
             #if((step + 1) % 500 == 0):
-            t_loss = sess.run(loss, feed_dict={x: np.array(batch_xs), y: np.array(batch_ys), keep_prob: 0.8})
+            t_loss = sess.run(loss, feed_dict={x: batch_xs, 
+                                               y: batch_ys, 
+                                               keep_prob: 0.8})
             logging.info("Step {} of {} | Loss: {}".format(step, tr_data.data_size,t_loss))
+            
+            s = sess.run(merged_summary, feed_dict={x: batch_xs,
+                                                    y: batch_ys,
+                                                    keep_prob: 1.})
+
+            writer.add_summary(s, epoch*tr_data.data_size + step)
             
             
             sess.run(train_op, feed_dict={x: batch_xs, 

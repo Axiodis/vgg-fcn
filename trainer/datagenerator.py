@@ -1,7 +1,5 @@
 import tensorflow as tf
 import numpy as np
-
-from tensorflow.contrib.data import Dataset
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework.ops import convert_to_tensor
 import random
@@ -25,16 +23,14 @@ class ImageDataGenerator(object):
         self.labels = convert_to_tensor(self.labels, dtype=dtypes.string)
 
         # create dataset
-        data = Dataset.from_tensor_slices((self.images, self.labels))
+        data = tf.data.Dataset.from_tensor_slices((self.images, self.labels))
 
         # distinguish between train/infer. when calling the parsing functions
         if mode == 'training':
-            data = data.map(self._parse_function_train, num_threads=8,
-                      output_buffer_size=100*batch_size)
+            data = data.map(self._parse_function_train, num_parallel_calls=8)
 
         elif mode == 'inference':
-            data = data.map(self._parse_function_inference, num_threads=8,
-                      output_buffer_size=100*batch_size)
+            data = data.map(self._parse_function_inference, num_parallel_calls=8)
 
         else:
             raise ValueError("Invalid mode '%s'." % (mode))
@@ -66,30 +62,26 @@ class ImageDataGenerator(object):
 
     def _parse_function_train(self, image, label):
         
-
         # load and preprocess the image
         img_string = tf.read_file(image)
-        img_decoded = tf.image.decode_jpeg(img_string)
+        img_decoded = tf.image.decode_jpeg(img_string, channels=3)
         
         # load and preprocess the label
         label_string = tf.read_file(label)
-        label_decoded = tf.image.decode_png(label_string)
+        label_decoded = tf.image.decode_png(label_string, channels=3)
         
         """
-        Dataaugmentation comes here.
+        Data augmentation.
         """
-        
         if random.random() < 0.5:
             img_decoded = tf.image.flip_left_right(img_decoded)
             label_decoded = tf.image.flip_left_right(label_decoded)
-            
-            
+        
         img_centered = tf.subtract(tf.to_float(img_decoded), IMAGENET_MEAN)
 
         # RGB -> BGR
         img_bgr = img_centered[:, :, ::-1]
         
-
         return img_bgr, label_decoded
 
     def _parse_function_inference(self, image, label):
