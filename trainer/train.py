@@ -125,12 +125,10 @@ with tf.Session() as sess:
         
         # Initialize iterator with the training dataset
         sess.run(training_init_op)
-        logging.info("Steps per epoch: {}".format(tr_data.data_size))
         logging.info("Epoch: {}".format(epoch+1))
         
             
         for step in range(tr_data.data_size):
-            logging.info("Step {} of {}".format(step, tr_data.data_size))
             
             batch_xs, batch_ys = sess.run(next_batch)
             
@@ -140,8 +138,7 @@ with tf.Session() as sess:
                 labels_batch[i] = process_label(batch_ys[i],cmap)
             
             
-            
-            if ((step + 1) % 500 == 0):
+            if ((step + 1) % 250 == 0):
                 t_loss = sess.run(loss, feed_dict={x: batch_xs, 
                                                    y: labels_batch, 
                                                    keep_prob: 0.5})
