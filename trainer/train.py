@@ -142,23 +142,23 @@ with tf.Session() as sess:
             cmap = color_map(21)
             labels_batch = np.zeros((batch_ys.shape[0], batch_ys.shape[1], batch_ys.shape[2]), dtype = np.uint8)
             for i in range(batch_ys.shape[0]):
-                batch_ys[i] = process_label(batch_ys[i],cmap)
+                labels_batch[i] = process_label(batch_ys[i],cmap)
             
             #if((step + 1) % 500 == 0):
             t_loss = sess.run(loss, feed_dict={x: batch_xs, 
-                                               y: batch_ys, 
+                                               y: labels_batch, 
                                                keep_prob: 0.8})
             logging.info("Step {} of {} | Loss: {}".format(step, tr_data.data_size,t_loss))
             
             s = sess.run(merged_summary, feed_dict={x: batch_xs,
-                                                    y: batch_ys,
+                                                    y: labels_batch,
                                                     keep_prob: 1.})
 
             writer.add_summary(s, epoch*tr_data.data_size + step)
             
             
             sess.run(train_op, feed_dict={x: batch_xs, 
-                                          y: batch_ys, 
+                                          y: labels_batch, 
                                           keep_prob: 0.8})
         
         if((epoch+1) % 25 == 0):
