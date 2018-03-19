@@ -22,6 +22,8 @@ NUM_CLASSES = 22
 learning_rate = 1e-6
 batch_size = 1
 
+cmap = color_map(21)
+
 filewriter_path = os.path.join(FLAGS.main_dir,"vgg_fcn/tensorboard")
 checkpoint_path = os.path.join(FLAGS.main_dir,"vgg_fcn/checkpoints")
 
@@ -55,7 +57,6 @@ keep_prob = tf.placeholder(tf.float32)
 
 """Build Model"""
 model = VGG16_FCN(x, NUM_CLASSES, keep_prob)
-print("[MODEL] => Time: {} Built".format(datetime.now()))
 logging.info("Model built")
 
 
@@ -104,7 +105,6 @@ tf.summary.scalar('cross_entropy', loss)
 merged_summary = tf.summary.merge_all()
 
 """Start Tensorflow session"""
-print("[TRAIN] => Time: {} Start session".format(datetime.now()))
 logging.info("Session started")
 
 #try:
@@ -118,7 +118,6 @@ with tf.Session() as sess:
     
     model.load_initial_weights(sess,os.path.join(FLAGS.main_dir,"vgg_fcn/vgg16.npy"))
   
-    print("[TRAIN] => Time: {} Start training...".format(datetime.now()))
     print("[TENSORBOARD] => Open Tensorboard at --logdir {}".format(filewriter_path))
     logging.info("Training started")
 
@@ -126,54 +125,48 @@ with tf.Session() as sess:
         
         # Initialize iterator with the training dataset
         sess.run(training_init_op)
-    
-        print("[EPOCH] => Time: {} Epoch number: {}".format(datetime.now(), epoch+1))
         logging.info("Steps per epoch: {}".format(tr_data.data_size))
         logging.info("Epoch: {}".format(epoch+1))
         
             
         for step in range(tr_data.data_size):
+            logging.info("Step {} of {}".format(step, tr_data.data_size))
             
             batch_xs, batch_ys = sess.run(next_batch)
             
             """ Map label colors"""
-            cmap = color_map(21)
             labels_batch = np.zeros((batch_ys.shape[0], batch_ys.shape[1], batch_ys.shape[2]), dtype = np.uint8)
             for i in range(batch_ys.shape[0]):
                 labels_batch[i] = process_label(batch_ys[i],cmap)
             
-            #if((step + 1) % 500 == 0):
-            t_loss = sess.run(loss, feed_dict={x: batch_xs, 
-                                               y: labels_batch, 
-                                               keep_prob: 0.5})
-            logging.info("Step {} of {} | Loss: {}".format(step, tr_data.data_size,t_loss))
             
-            s = sess.run(merged_summary, feed_dict={x: batch_xs,
+            
+            if ((step + 1) % 500 == 0):
+                t_loss = sess.run(loss, feed_dict={x: batch_xs, 
+                                                   y: labels_batch, 
+                                                   keep_prob: 0.5})
+    
+                s = sess.run(merged_summary, feed_dict={x: batch_xs,
                                                     y: labels_batch,
                                                     keep_prob: 1.})
-
-            writer.add_summary(s, epoch*tr_data.data_size + step)
+    
+                writer.add_summary(s, epoch*tr_data.data_size + step)
+                
+                logging.info("Loss: {}".format(t_loss))
             
             
             sess.run(train_op, feed_dict={x: batch_xs, 
                                           y: labels_batch, 
                                           keep_prob: 0.5})
         
-        if((epoch+1) % 25 == 0):
-        
-            print("[SAVE] => Time: {} Saving checkpoint of model...".format(datetime.now()))  
-            
+        if((epoch+1) % 25 == 0): 
+            logging.info("Saving Model")
             checkpoint_name = os.path.join(checkpoint_path, 'model_epoch'+str(datetime.now())+'.ckpt')
             save_path = saver.save(sess, checkpoint_name)  
             
-            print("[SAVE] => Time: {} Model checkpoint saved at {}".format(datetime.now(), checkpoint_name))
-            logging.info("Saving Model")
-            
-    print("[TRAIN] => Time: {} Finish training...".format(datetime.now()))
     logging.info("Training finished")
 
     checkpoint_name = os.path.join(checkpoint_path, 'final_model'+str(datetime.now())+'.ckpt')
-    print("[FINAL-SAVE] => Time: {} Final model checkpoint saved at {}".format(datetime.now(), checkpoint_name))
 
 """
 except Exception as e:
