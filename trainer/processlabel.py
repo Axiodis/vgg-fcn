@@ -20,9 +20,8 @@ def color_map(N=256, normalized=False):
     cmap = cmap/255 if normalized else cmap
     return cmap
 
-def process_label(label):
+def process_label(label, cmap):
     
-    cmap = color_map(21)
     result = np.zeros((label.shape[0], label.shape[1]), dtype = np.uint8)
     
     for i in range(label.shape[0]):
