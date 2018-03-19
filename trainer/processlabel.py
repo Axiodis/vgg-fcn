@@ -34,6 +34,6 @@ def process_label(label, cmap):
                     ok = True
                     
             if not ok:
-                result[i,j] = 22
+                result[i,j] = 21
             
     return result
