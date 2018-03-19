@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+from tensorflow.contrib.data import Dataset
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework.ops import convert_to_tensor
 import random
@@ -23,14 +24,14 @@ class ImageDataGenerator(object):
         self.labels = convert_to_tensor(self.labels, dtype=dtypes.string)
 
         # create dataset
-        data = tf.data.Dataset.from_tensor_slices((self.images, self.labels))
+        data = Dataset.from_tensor_slices((self.images, self.labels))
 
         # distinguish between train/infer. when calling the parsing functions
         if mode == 'training':
-            data = data.map(self._parse_function_train, num_parallel_calls=8)
+            data = data.map(self._parse_function_train, num_threads=8, output_buffer_size=100*batch_size)
 
         elif mode == 'inference':
-            data = data.map(self._parse_function_inference, num_parallel_calls=8)
+            data = data.map(self._parse_function_inference, num_threads=8, output_buffer_size=100*batch_size)
 
         else:
             raise ValueError("Invalid mode '%s'." % (mode))
@@ -64,7 +65,7 @@ class ImageDataGenerator(object):
         
         # load and preprocess the image
         img_string = tf.read_file(image)
-        img_decoded = tf.image.decode_jpeg(img_string, channels=3)
+        img_decoded = tf.image.decode_jpeg(img_string)
         
         # load and preprocess the label
         label_string = tf.read_file(label)
@@ -91,7 +92,7 @@ class ImageDataGenerator(object):
         
         # load and preprocess the label
         label_string = tf.read_file(label)
-        label_decoded = tf.image.decode_png(label_string, channels=0)
+        label_decoded = tf.image.decode_png(label_string, channels=3)
         
         """
         Dataaugmentation comes here.

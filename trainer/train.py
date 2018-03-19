@@ -149,7 +149,7 @@ with tf.Session() as sess:
     
                 writer.add_summary(s, epoch*tr_data.data_size + step)
                 
-                logging.info("Loss: {}".format(t_loss))
+                logging.info("Step {} of {} | Loss: {}".format(step, tr_data.data_size,t_loss))
             
             
             sess.run(train_op, feed_dict={x: batch_xs, 
