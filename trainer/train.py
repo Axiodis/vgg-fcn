@@ -22,8 +22,6 @@ NUM_CLASSES = 22
 learning_rate = 1e-6
 batch_size = 1
 
-cmap = color_map(21)
-
 filewriter_path = os.path.join(FLAGS.main_dir,"vgg_fcn/tensorboard")
 checkpoint_path = os.path.join(FLAGS.main_dir,"vgg_fcn/checkpoints")
 
@@ -52,7 +50,7 @@ training_init_op = iterator.make_initializer(tr_data.data)
 
 # TF placeholder for graph input and output
 x = tf.placeholder(tf.float32, shape=[batch_size, None, None, 3], name="input_image")
-y = tf.placeholder(tf.int32, shape=[batch_size, None, None], name="input_label")
+y = tf.placeholder(tf.int32, shape=[batch_size, None, None, 1], name="input_label")
 keep_prob = tf.placeholder(tf.float32)
 
 """Build Model"""
@@ -62,7 +60,7 @@ logging.info("Model built")
 
 """Define loss function"""
 with tf.name_scope("loss"):
-    loss = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(labels = y, 
+    loss = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(labels = tf.squeeze(y, axis=3), 
                                                                           logits = model.upscore8, 
                                                                           name="loss")))
 
@@ -130,21 +128,15 @@ with tf.Session() as sess:
             
         for step in range(tr_data.data_size):
             
-            batch_xs, batch_ys = sess.run(next_batch)
-            
-            """ Map label colors"""
-            labels_batch = np.zeros((batch_ys.shape[0], batch_ys.shape[1], batch_ys.shape[2]), dtype = np.uint8)
-            for i in range(batch_ys.shape[0]):
-                labels_batch[i] = process_label(batch_ys[i],cmap)
-            
+            batch_xs, batch_ys = sess.run(next_batch)            
             
             if ((step + 1) % 250 == 0):
                 t_loss = sess.run(loss, feed_dict={x: batch_xs, 
-                                                   y: labels_batch, 
+                                                   y: batch_ys, 
                                                    keep_prob: 0.5})
     
                 s = sess.run(merged_summary, feed_dict={x: batch_xs,
-                                                    y: labels_batch,
+                                                    y: batch_ys,
                                                     keep_prob: 1.})
     
                 writer.add_summary(s, epoch*tr_data.data_size + step)
@@ -153,7 +145,7 @@ with tf.Session() as sess:
             
             
             sess.run(train_op, feed_dict={x: batch_xs, 
-                                          y: labels_batch, 
+                                          y: batch_ys, 
                                           keep_prob: 0.5})
         
         if((epoch+1) % 25 == 0): 

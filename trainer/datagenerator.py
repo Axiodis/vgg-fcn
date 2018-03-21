@@ -65,11 +65,11 @@ class ImageDataGenerator(object):
         
         # load and preprocess the image
         img_string = tf.read_file(image)
-        img_decoded = tf.image.decode_jpeg(img_string)
+        img_decoded = tf.image.decode_jpeg(img_string, channels=3)
         
         # load and preprocess the label
         label_string = tf.read_file(label)
-        label_decoded = tf.image.decode_png(label_string, channels=3)
+        label_decoded = tf.image.decode_png(label_string)
         
         """
         Data augmentation.
