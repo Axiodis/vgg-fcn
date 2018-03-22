@@ -114,7 +114,13 @@ with tf.Session() as sess:
     # Add the model graph to TensorBoard
     writer.add_graph(sess.graph)
     
-    model.load_initial_weights(sess,os.path.join(FLAGS.main_dir,"vgg_fcn/vgg16.npy"))
+    
+    ckpt = tf.train.get_checkpoint_state(checkpoint_path)
+    if ckpt and ckpt.model_checkpoint_path:
+        saver.restore(sess, ckpt.model_checkpoint_path)
+        logging.info("Model restored")
+    else:
+        model.load_initial_weights(sess,os.path.join(FLAGS.main_dir,"vgg_fcn/vgg16.npy"))
   
     print("[TENSORBOARD] => Open Tensorboard at --logdir {}".format(filewriter_path))
     logging.info("Training started")
