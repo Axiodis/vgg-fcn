@@ -1,6 +1,5 @@
 from trainer.vgg16_fcn import VGG16_FCN
 from trainer.datagenerator import ImageDataGenerator
-from trainer.processlabel import process_label,color_map
 
 import tensorflow as tf
 from tensorflow.contrib.data import Iterator
@@ -8,7 +7,6 @@ from datetime import datetime
 import os
 import logging
 import subprocess
-import numpy as np
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -17,15 +15,13 @@ flags.DEFINE_string('main_dir', 'main', 'Main Directory.')
 log_file = "{}.log".format(datetime.now().strftime("%d-%m-%Y"))
 logging.basicConfig(filename = log_file, format='%(levelname)s (%(asctime)s): %(message)s', level = logging.INFO)
 
-num_epochs = 100
+num_epochs = 150
 NUM_CLASSES = 22
 learning_rate = 1e-6
 batch_size = 1
 
 filewriter_path = os.path.join(FLAGS.main_dir,"vgg_fcn/tensorboard")
 checkpoint_path = os.path.join(FLAGS.main_dir,"vgg_fcn/checkpoints")
-
-IMAGENET_MEAN = tf.constant([123.68, 116.779, 103.939], dtype=tf.float32)
 
 train_file = 'train.txt'
 
@@ -114,13 +110,13 @@ with tf.Session() as sess:
     # Add the model graph to TensorBoard
     writer.add_graph(sess.graph)
     
-    
     ckpt = tf.train.get_checkpoint_state(checkpoint_path)
     if ckpt and ckpt.model_checkpoint_path:
         saver.restore(sess, ckpt.model_checkpoint_path)
         logging.info("Model restored")
     else:
         model.load_initial_weights(sess,os.path.join(FLAGS.main_dir,"vgg_fcn/vgg16.npy"))
+        logging.info("Npy file loaded")
   
     print("[TENSORBOARD] => Open Tensorboard at --logdir {}".format(filewriter_path))
     logging.info("Training started")
@@ -154,7 +150,7 @@ with tf.Session() as sess:
                                           y: batch_ys, 
                                           keep_prob: 0.5})
         
-        if((epoch+1) % 25 == 0): 
+        if((epoch+1) % 15 == 0): 
             logging.info("Saving Model")
             checkpoint_name = os.path.join(checkpoint_path, 'model_epoch'+str(datetime.now())+'.ckpt')
             save_path = saver.save(sess, checkpoint_name)  
@@ -162,6 +158,7 @@ with tf.Session() as sess:
     logging.info("Training finished")
 
     checkpoint_name = os.path.join(checkpoint_path, 'final_model'+str(datetime.now())+'.ckpt')
+    save_path = saver.save(sess, checkpoint_name) 
 
 """
 except Exception as e:
